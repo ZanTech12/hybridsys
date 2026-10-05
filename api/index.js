@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const prisma = require('../config/db');
 const cors = require('cors');
@@ -6,7 +7,7 @@ const path = require('path');
 const os = require('os');
 const fs = require('fs');
 const { spawn } = require('child_process');
-require('dotenv').config();
+
 
 // Import the auth middleware
 const { authenticateToken } = require('../middlewares/authMiddleware');
