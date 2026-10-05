@@ -90,39 +90,6 @@ const publicDir = firstExisting([
 if (publicDir) app.use(express.static(publicDir));
 
 // ===================================================================
-// *** SERVE REACT FRONTEND — static files ***
-// ✅ MUST be BEFORE all routes — otherwise the root-mounted routers
-//    intercept GET / and /favicon.ico and return 401.
-// ===================================================================
-const frontendBuild = firstExisting([
-    path.join(__dirname, '..', 'cschoolexam', 'build'),        // cschoolexam inside this repo
-    path.join(__dirname, '..', '..', 'cschoolexam', 'build')   // cschoolexam beside this repo (server.js layout)
-], 'index.html');
-
-if (frontendBuild) {
-    app.use(express.static(frontendBuild));
-}
-
-// ===================================================================
-// *** SPA ROUTES — browser navigations to frontend pages ***
-// ✅ GET + Accept: text/html = a human navigating in a browser →
-//    serve the React app. Axios API calls send Accept: application/json
-//    and pass straight through to the API untouched.
-// ===================================================================
-const SPA_ROUTES = ['/login', '/admin', '/teacher', '/student', '/register'];
-if (frontendBuild) {
-    app.use((req, res, next) => {
-        if (req.method === 'GET' && (req.headers.accept || '').includes('text/html')) {
-            const matchesSpa = SPA_ROUTES.some(r => req.path === r || req.path.startsWith(r + '/'));
-            if (matchesSpa) {
-                return res.sendFile(path.join(frontendBuild, 'index.html'));
-            }
-        }
-        next();
-    });
-}
-
-// ===================================================================
 // ✅ HEALTH CHECK ROUTE — registered BEFORE all API mounts (especially
 //    app.use('/api', analyticsRoutes)) so nothing can intercept it.
 //    Used by Network Settings.
@@ -221,10 +188,8 @@ const resultPinRoutes = require('../routes/resultPinRoutes'); // ✅ Result PIN 
 // *** 5. MOUNT ROUTES ***
 // ===================================================================
 
-// Root endpoint — only when we're NOT serving the React build from this server
-if (!frontendBuild) {
-    app.get('/', (req, res) => res.json({ success: true, message: 'School Management API is running...' }));
-}
+// Root endpoint
+app.get('/', (req, res) => res.json({ success: true, message: 'School Management API is running...' }));
 
 app.use('/login', authRoutes);
 app.use('/superadmin', superAdminRoutes);
@@ -449,19 +414,6 @@ app.use('/', broadsheetRoutes);
 app.use('/', adminCaManagementRoutes);
 app.use('/', adminScoresRoutes);
 app.use('/', scoreManagementRoutes);
-
-// ===================================================================
-// *** SPA FALLBACK — any unmatched GET that wants HTML gets the app ***
-// (Stays AFTER all routes so every API endpoint is matched first.)
-// ===================================================================
-if (frontendBuild) {
-    app.use((req, res, next) => {
-        if (req.method === 'GET' && (req.headers.accept || '').includes('text/html')) {
-            return res.sendFile(path.join(frontendBuild, 'index.html'));
-        }
-        next();
-    });
-}
 
 // ===================================================================
 // *** 6. GLOBAL ERROR HANDLER ***
