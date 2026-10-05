@@ -1,0 +1,20 @@
+# Dependencies
+node_modules/
+
+# Environment variables (KEEP THIS IGNORED for security!)
+.env
+
+# Uploads (Never commit user uploads to git)
+uploads/
+
+# AI Tools & Editor configs
+.agents/
+.claude/
+.cursor/
+.devin/
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+backend/server.js
